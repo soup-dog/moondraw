@@ -22,6 +22,8 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     const [lines, setLines] = useState(canvas.renderToEmojiLines());
     const [rect, setRect] = useState(new DOMRect());
     const canvasRef = useRef();
+    const mouseDown = useRef(false);
+    
     const brushes = {
         draw: {
             blend: Math.max,
@@ -44,6 +46,7 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     }
 
     function onPointerMove(event: PointerEvent<HTMLParagraphElement>) {
+        if (!mouseDown.current) return;
         const row = (event.clientY - rect.top) / rect.height * canvas.rows;
         const column = (event.clientX - rect.left) / rect.width * canvas.columns;
         const {blend, fullnessFn} = brushes[props.getBrush()];
@@ -52,6 +55,17 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     }
 
     return (
-        <div style={{display: "inline-block"}} ref={canvasRef} onPointerMove={onPointerMove}>{lines.map((line, i) => <span key={i}>{line}<br/></span>)}</div>
+        <div
+            style={{display: "inline-block"}}
+            ref={canvasRef}
+            onPointerMove={onPointerMove}
+            onPointerDown={(event) => {
+                event.preventDefault(); // prevent text from being highlighted
+                mouseDown.current = true
+            }}
+            onPointerUp={() => mouseDown.current = false}
+        >
+            {lines.map((line, i) => <span key={i}>{line}<br/></span>)}
+        </div>
     );
 }
