@@ -2,9 +2,18 @@ import * as React from "react";
 import { useState, PointerEvent, useRef } from "react";
 import Canvas from "./drawing";
 
+
+export type BrushType = "draw" | "erase";
+
+interface Brush {
+    blend: (a: number, b: number) => number,
+    fullnessFn: (r: number, dSqrd: number) => number,
+}
+
 interface MoonCanvasProps {
     rows: number,
     columns: number,
+    getBrush: () => BrushType,
 }
 
 
@@ -13,6 +22,16 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     const [lines, setLines] = useState(canvas.renderToEmojiLines());
     const [rect, setRect] = useState(new DOMRect());
     const canvasRef = useRef();
+    const brushes = {
+        draw: {
+            blend: Math.max,
+            fullnessFn: (r: number, d: number) => (r * 0.5) / Math.sqrt(d),
+        },
+        erase: {
+            blend: Math.min,
+            fullnessFn: (r: number, d: number) => 1 - (r * 0.5) / Math.sqrt(d),
+        },
+    }
 
     if (rect.width === 0 || rect.height === 0) {
         if (canvasRef.current) {
@@ -25,11 +44,10 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     }
 
     function onPointerMove(event: PointerEvent<HTMLParagraphElement>) {
-        // const rect = event.target;
-        // console.log(event.target);
         const row = (event.clientY - rect.top) / rect.height * canvas.rows;
         const column = (event.clientX - rect.left) / rect.width * canvas.columns;
-        canvas.brush(row, column, 1, Math.max, (r, d) => (r * 0.5) / Math.sqrt(d));
+        const {blend, fullnessFn} = brushes[props.getBrush()];
+        canvas.brush(row, column, 1, blend, fullnessFn);
         setLines(canvas.renderToEmojiLines());
     }
 

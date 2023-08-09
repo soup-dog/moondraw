@@ -1,11 +1,11 @@
 // make palette
-enum Direction {
+export enum Direction {
     Left,
     Right,
 }
 
 
-class Palette {
+export class Palette {
     left: string[];
     right: string[];
 
@@ -32,8 +32,8 @@ class Palette {
 // const columns = 16;
 // const size = rows * columns;
 
-type Exel = [Direction, number];
-type Image = Exel[];
+export type Exel = [Direction, number];
+export type Image = Exel[];
 
 // const image: Image = Array.from({length: size}, () => [Direction.Left, 0]);
 
@@ -74,6 +74,7 @@ function distSquared(x1: number, y1: number, x2: number, y2: number) {
 //         }
 //     }
 // }
+
 
 export default class Canvas {
     readonly rows: number;
