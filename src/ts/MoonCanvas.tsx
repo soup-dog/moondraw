@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, PointerEvent, useRef } from "react";
+import { useState, PointerEvent, useRef, useEffect } from "react";
 import Canvas from "./drawing";
 
 
@@ -8,6 +8,7 @@ export type BrushType = "draw" | "erase";
 interface Brush {
     blend: (a: number, b: number) => number,
     fullnessFn: (r: number, dSqrd: number) => number,
+    flip: boolean,
 }
 
 interface MoonCanvasProps {
@@ -22,16 +23,28 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     const [lines, setLines] = useState(canvas.renderToEmojiLines());
     const [rect, setRect] = useState(new DOMRect());
     const canvasRef = useRef();
-    const mouseDown = useRef(false);
+    const pointerDown = useRef(false);
+    useEffect(() => {
+        const onPointerDown = () => pointerDown.current = true;
+        const onPointerUp = () => pointerDown.current = false;
+        window.addEventListener("pointerdown", onPointerDown);
+        window.addEventListener("pointerup", onPointerUp);
+        return () => {
+            window.removeEventListener("pointerdown", onPointerDown);
+            window.removeEventListener("pointerup", onPointerUp);
+        };
+    });
     
     const brushes = {
         draw: {
             blend: Math.max,
             fullnessFn: (r: number, d: number) => (r * 0.5) / Math.sqrt(d),
+            flip: false,
         },
         erase: {
             blend: Math.min,
             fullnessFn: (r: number, d: number) => 1 - (r * 0.5) / Math.sqrt(d),
+            flip: true,
         },
     }
 
@@ -46,24 +59,24 @@ export default function MoonCanvas(props: MoonCanvasProps) {
     }
 
     function onPointerMove(event: PointerEvent<HTMLParagraphElement>) {
-        if (!mouseDown.current) return;
+        if (!pointerDown.current) return;
         const row = (event.clientY - rect.top) / rect.height * canvas.rows;
         const column = (event.clientX - rect.left) / rect.width * canvas.columns;
-        const {blend, fullnessFn} = brushes[props.getBrush()];
-        canvas.brush(row, column, 1, blend, fullnessFn);
+        const {blend, fullnessFn, flip} = brushes[props.getBrush()];
+        canvas.brush(row, column, 1, blend, fullnessFn, flip);
         setLines(canvas.renderToEmojiLines());
     }
 
     return (
         <div
-            style={{display: "inline-block"}}
+            style={{width: "fit-content"}}
             ref={canvasRef}
             onPointerMove={onPointerMove}
             onPointerDown={(event) => {
                 event.preventDefault(); // prevent text from being highlighted
-                mouseDown.current = true
+                // pointerDown.current = true
             }}
-            onPointerUp={() => mouseDown.current = false}
+            // onPointerUp={() => pointerDown.current = false}
         >
             {lines.map((line, i) => <span key={i}>{line}<br/></span>)}
         </div>

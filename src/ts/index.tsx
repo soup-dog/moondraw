@@ -14,14 +14,14 @@ function randomChoice(arr: {length: number, [key: number]: any}) {
 
 const title = Moon.lunarPhaseEmoji() + randomChoice(["🖊️", "✒️", "🖋️", "✏️", "🎨", "🖌️"]);
 
-document.title = title;
+document.title = "MOON" + title + "DRAW";
 
 
 const container = document.createElement("div");
 document.body.appendChild(container);
 const root = createRoot(container);
 
-root.render(<App/>);
+root.render(<App title={title}/>);
 
 
 // const rows = 16;

@@ -90,7 +90,7 @@ export default class Canvas {
         this.palette = new Palette(["🌑", "🌘", "🌗", "🌖", "🌕"], ["🌑", "🌒", "🌓", "🌔", "🌕"]);
     }
 
-    brush(row: number, column: number, radius: number = 1, blend: (a: number, b: number) => number = Math.max, fullnessFn: (r: number, dSqrd: number) => number = (r, d) => r / Math.sqrt(d)) {
+    brush(row: number, column: number, radius: number = 1, blend: (a: number, b: number) => number = Math.max, fullnessFn: (r: number, dSqrd: number) => number = (r, d) => r / Math.sqrt(d), flip: boolean = false) {
         for (let r = 0; r < this.rows; r++) {
             for (let c = 0; c < this.columns; c++) {
                 const i = r * this.columns + c;
@@ -99,7 +99,7 @@ export default class Canvas {
                     // const v = radius / distSquared(r, c, row, column);
                     const v = fullnessFn(radius, d);
                     const clamped = blend(this.image[i][1], Math.max(0, Math.min(v, 1)));
-                    this.image[i] = [c > column ? Direction.Left : Direction.Right, clamped];
+                    this.image[i] = [c > column !== flip ? Direction.Left : Direction.Right, clamped];
                 }
             }
         }
